@@ -66,6 +66,9 @@ nba-front-office-analytics/
 - `docs/architecture.png` contains the project architecture diagram.
 - `docs/screenshots/` contains screenshots documenting the AWS implementation and successful pipeline execution.
 
+## Cross-Source Joins and Name Normalization
+The four data sources used did not share a common Player ID field, and a player's name sometimes varied slightly across sources, e.g., Ish Smith versus Ishmael Smith. The silver datasets were joined based on a normalized name field plus the corresponding season. The Glue job for creating the gold table standardized names by converting them to lowercase, removing punctuation, removing generational suffixes, and removing accents. It also made use of a small alias-mapping layer for players who still, after those normalization techniques were applied, had slightly different names across sources. In the end, we were not able to salvage every last player-season from the first source - nba_api - but we got everything we could. A handful of players each season did not have corresponding salary data in our salary table. In the future, additional time could be spent hunting these exceptions down one-by-one for completeness, but it is unlikely to meaningfully impact the model or conclusions given the small proportion left unused.
+
 ## Modeling Approach
 The model predicts each player's salary as a percentage of the NBA salary cap. Using salary as a share of the cap rather than nominal dollars allows for more meaningful comparisons across seasons. The analysis compared several approaches, including OLS regression, but ultimately settled on using XGBoost because it provided the strongest validation performance. Many of the modeled relationships are likely non-linear, hence XGBoost outperforming OLS. A random forest was also tried, but XGBoost still achieved higher performance.
 
